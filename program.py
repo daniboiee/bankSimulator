@@ -5,8 +5,9 @@ transaction_history = ""
 
 # Function to make an account
 def makeAccount():
+    global balance, transaction_history
     balance += 10000.0
-    transaction_history = "Deposited 10000."
+    transaction_history = "Deposited 10000.0"
 
 def bankMenu():
     choice = None
@@ -27,21 +28,32 @@ def bankMenu():
             case "4":
                 break
             case _:
+                print("Please enter a valid number.")
     print("Thank you for using the program.")
 
 def updateBalance(isWithdraw):
+    global balance, transaction_history
     print(f"Your current account balance is {balance}.")
-    money = input("Please insert how much money you want to move: ")
-    if type(money) not in (int, float) or (isWithdraw and balance < money): # Checks if the insert value is valid
-        print("What you input is invalid. Please try again.")
-        updateBalance(isWithdraw)
+
+    try:
+        money = float(input("Please insert how much money you want to move: "))
+        if money <= 0:
+            raise ValueError("Amount must be positive.")
+    except ValueError:
+        print("Invalid input. Please enter a number greater than 0.")
+        return updateBalance(isWithdraw)
+
+    if isWithdraw and balance < money:
+        print("Insufficient funds.")
+        return updateBalance(isWithdraw)
 
     if isWithdraw:
         balance -= money
-        transaction_history += f"\nWithdrew {int(money)}."
+        transaction_history += f"\nWithdrew {money}."
     else:
         balance += money
-        transaction_history += f"\nDeposited {int(money)}."
+        transaction_history += f"\nDeposited {money}."
+    print("Transaction complete. Returning to bank menu.")
 
 
 def main():
