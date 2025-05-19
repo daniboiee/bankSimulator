@@ -7,7 +7,7 @@ transaction_history = ""
 def makeAccount():
     global balance, transaction_history
     balance += 10000.0
-    transaction_history = "Deposited 10000.0"
+    transaction_history = "Deposited 10000.0."
 
 def bankMenu():
     choice = None
@@ -34,9 +34,14 @@ def bankMenu():
 def updateBalance(isWithdraw):
     global balance, transaction_history
     print(f"Your current account balance is {balance}.")
+    user_input = input("Please insert how much money you want to move (or type 'cancel' to return to menu): ").strip().lower()
+
+    if user_input == "cancel":
+        print("Transaction cancelled. Returning to bank menu.")
+        return
 
     try:
-        money = float(input("Please insert how much money you want to move: "))
+        money = float(user_input)
         if money <= 0:
             raise ValueError("Amount must be positive.")
     except ValueError:
