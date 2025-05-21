@@ -1,7 +1,15 @@
-# Version 1 of the bank program
+# Version 2 of the bank program
 
 balance = 0.0
 transaction_history = ""
+
+def loginMenu():
+    choice = input("Would you like to login to an existing account? (y/n): ").strip().lower()
+    if choice != "y"
+        makeAccount()
+        return
+    username = input("Please pick a username for your account: ")
+    password = input("Please pick a password for your account: ")
 
 # Function to make an account
 def makeAccount():
@@ -62,7 +70,7 @@ def updateBalance(isWithdraw):
 
 
 def main():
-    makeAccount()
+    loginMenu()
     bankMenu()
     
 
