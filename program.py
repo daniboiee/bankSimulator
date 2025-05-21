@@ -1,5 +1,6 @@
 # Version 2 of the bank program
 
+# Initialise global variables for account balance and transaction history
 balance = 0.0
 transaction_history = ""
 
@@ -8,7 +9,7 @@ def loginMenu():
     if choice != "y"
         makeAccount()
         return
-    username = input("Please pick a username for your account: ")
+    name = input("Please pick a name for your account: ")
     password = input("Please pick a password for your account: ")
 
 # Function to make an account
@@ -68,6 +69,22 @@ def updateBalance(isWithdraw):
         transaction_history += f"\nDeposited {money}."
     print("Transaction complete. Returning to bank menu.")
 
+def update_data(user_name, money):
+    with open("accounts.txt", "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        if line.startswith(f"{user_name}"):
+            parts = line.strip().split(", ")
+            parts[-1] = str(money)              # New value for money
+            lines[i] = ", ".join(parts)
+            break
+
+def load_data():
+    if not os.path.exists("accounts.txt"):
+        with open("accounts.txt", "x") as f:
+            pass
+    with open("accounts.txt", "r") as f:
+        return f.readlines()
 
 def main():
     loginMenu()
@@ -75,5 +92,13 @@ def main():
     
 
 main()
-
+'''
+def show_user_data(user_name):
+    data = load_data()
+    print(f"\n--- Score History for {user_name} ---")
+    for line in data:
+        if line.startswith(f"{user_name}:"):
+            print(line.strip())
+    print("------------------------------\n")
+'''
 #& C:/Users/daniel.sarruf/AppData/Local/Programs/Python/Python312/python.exe C:\Users\daniel.sarruf\Desktop\school_code\assessment_bank\bankSimulator\program.py
