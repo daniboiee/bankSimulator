@@ -33,6 +33,7 @@ class User:
         else:
             for entry in self.transaction_history:
                 print(entry)
+            print(f"Current balance: {self.balance}")
     
     # Function that saves the users information to the file
     def save_to_file(self):
@@ -58,6 +59,7 @@ class User:
             f.writelines(lines)
 
     # Function that loads the users information from the file
+    @staticmethod   # "load_user" doesn't rely on "self", so I declared it as a static method
     def load_user(username):
         if not os.path.exists("accounts.txt"):
             return None
@@ -89,7 +91,9 @@ def loginMenu():
 
 def login():
     while True:
-        username = input("Enter your account name: ").strip()
+        username = input("Enter your account name (or type 'cancel' to return to menu): ").strip()
+        if username == "cancel":
+            return loginMenu()  # Return to menu
         user = User.load_user(username) # Loads the username
         if not user:
             print("Account not found. Try again.\n")    # If the user does not exist, asks for username again
@@ -120,7 +124,7 @@ def makeAccount():
     return user
 
 # Function that handles the bank menu and its options
-def bankMenu():
+def bankMenu(user):
     choice = None
     while choice != "4":
         print("\n--- Bank Menu ---")
@@ -132,9 +136,9 @@ def bankMenu():
 
         match choice:   # Handles user's choice using a match case statement
             case "1":
-                updateBalance(user, is_withdraw=False)     # Deposit
+                updateBalance(user, isWithdraw=False)     # Deposit
             case "2":
-                updateBalance(user, is_withdraw=True)      # Withdraw
+                updateBalance(user, isWithdraw=True)      # Withdraw
             case "3":
                 user.display_history()  # Show history
             case "4":
@@ -163,22 +167,22 @@ def updateBalance(user, isWithdraw):
         return updateBalance(user, isWithdraw)  # Retry
     
     # If withdrawing, checks for insufficient balance
-    if isWithdraw and balance < money:
+    if isWithdraw and user.balance < money:
         print("Insufficient funds.")
-        return updateBalance(isWithdraw)
+        return updateBalance(user, isWithdraw)  # Retry
     
     # Performs the transaction and updates history
     if isWithdraw:
-        if user.withdraw(amount):
+        if user.withdraw(money):
             print("Withdrawal successful.")
     else:
-        user.deposit(amount)
+        user.deposit(money)
         print("Deposit successful.")
 
 # Entry point for the program
 def main():
     user = loginMenu() # Login or create account
-    bankMenu()  # Start bank menu interaction
+    bankMenu(user)  # Start bank menu interaction
     
 if __name__ == "__main__":
     main()  # Runs the program
