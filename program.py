@@ -79,13 +79,13 @@ balance = 0.0
 transaction_history = ""
 
 # Function that handles logins and account creation
-def loginMenu():
+def login_menu():
     while True:
         choice = input("Would you like to login to an existing account? (y/n): ").strip().lower()
         if choice == "y":
             return login()  # If user wants to log in to an account, let them
         elif choice == "n":
-            return makeAccount()   # If user doesn't want to log in to an account, make a new one
+            return make_account()   # If user doesn't want to log in to an account, make a new one
         else:
             print("Invalid input. Please pick either 'y' or 'n'.")  # If user does not enter y or n, re-enter login menu     
 
@@ -93,7 +93,7 @@ def login():
     while True:
         username = input("Enter your account name (or type 'cancel' to return to menu): ").strip()
         if username == "cancel":
-            return loginMenu()  # Return to menu
+            return login_menu()  # Return to menu
         user = User.load_user(username) # Loads the username
         if not user:
             print("Account not found. Try again.\n")    # If the user does not exist, asks for username again
@@ -110,11 +110,11 @@ def login():
                 print(f"Incorrect password. {tries} tries remaining.\n")    # If the password is wrong, asks for the password again
 
         print("Too many failed attempts. Returning to login menu.") # If user fails to enter the password too many times, return to menu
-        return loginMenu()
+        return login_menu()
 
 
 # Function to make an account
-def makeAccount():
+def make_account():
     username = input("Please pick a username for your account: ").strip()   # Prompt user for name and password
     password = input("Please pick a password for your account: ").strip()
     user = User(username, password)
@@ -124,7 +124,7 @@ def makeAccount():
     return user
 
 # Function that handles the bank menu and its options
-def bankMenu(user):
+def bank_menu(user):
     choice = None
     while choice != "4":
         print("\n--- Bank Menu ---")
@@ -136,9 +136,9 @@ def bankMenu(user):
 
         match choice:   # Handles user's choice using a match case statement
             case "1":
-                updateBalance(user, isWithdraw=False)     # Deposit
+                update_balance(user, isWithdraw=False)     # Deposit
             case "2":
-                updateBalance(user, isWithdraw=True)      # Withdraw
+                update_balance(user, isWithdraw=True)      # Withdraw
             case "3":
                 user.display_history()  # Show history
             case "4":
@@ -149,7 +149,7 @@ def bankMenu(user):
                 print("Please enter a valid number from 1 to 4.")
 
 # Function that handles depositing and withdrawing money from the account
-def updateBalance(user, isWithdraw):
+def update_balance(user, isWithdraw):
     print(f"Your current account balance is {user.balance}.")
     user_input = input("Please insert how much money you want to move (or type 'cancel' to return to menu): ").strip().lower()
 
@@ -164,12 +164,12 @@ def updateBalance(user, isWithdraw):
             raise ValueError("Amount must be positive.")
     except ValueError:
         print("Invalid input. Please enter a number greater than 0.")
-        return updateBalance(user, isWithdraw)  # Retry
+        return update_balance(user, isWithdraw)  # Retry
     
     # If withdrawing, checks for insufficient balance
     if isWithdraw and user.balance < money:
         print("Insufficient funds.")
-        return updateBalance(user, isWithdraw)  # Retry
+        return update_balance(user, isWithdraw)  # Retry
     
     # Performs the transaction and updates history
     if isWithdraw:
@@ -181,8 +181,8 @@ def updateBalance(user, isWithdraw):
 
 # Entry point for the program
 def main():
-    user = loginMenu() # Login or create account
-    bankMenu(user)  # Start bank menu interaction
+    user = login_menu() # Login or create account
+    bank_menu(user)  # Start bank menu interaction
     
 if __name__ == "__main__":
     main()  # Runs the program
