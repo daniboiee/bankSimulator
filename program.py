@@ -28,11 +28,13 @@ class User:
     
     # Function that diplays the trnsaction history of the user
     def display_history(self):
+        i = 0
         if not self.transaction_history:
             print("No transactions yet.")
         else:
             for entry in self.transaction_history:
-                print(entry)
+                i += 1
+                print(f"{i}. {entry}")  # Prints all the entries in a list from 1 to however many entries there are
             print(f"Current balance: {self.balance}")
     
     # Function that saves the users information to the file
