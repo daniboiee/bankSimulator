@@ -1,7 +1,9 @@
-# Version 2 of the bank program
+# Version 3 of the bank program
 
 # Imports neccesary libraries
 import os
+import tkinter as tk
+from tkinter import messagebox
 
 # User class so facilitate containing the information of the person using the program
 class User:
@@ -185,7 +187,12 @@ def update_balance(user, isWithdraw):
 def main():
     user = login_menu() # Login or create account
     bank_menu(user)  # Start bank menu interaction
-    
+
+def start_gui():
+    root = tk.Tk()
+    root.title("Bank Program")
+    root.geometry("1000x1000")
+
 if __name__ == "__main__":
     main()  # Runs the program
 
