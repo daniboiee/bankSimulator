@@ -22,7 +22,7 @@ class User:
     # Function that withdraws money from the account
     def withdraw(self, amount):
         if amount > self.balance:
-            print("Insufficient funds.")
+            messagebox.showerror("Error", "Insufficient funds.")
             return False
         self.balance -= amount
         self.transaction_history.append(f"Withdrew {amount}.")
@@ -30,15 +30,9 @@ class User:
     
     # Function that diplays the trnsaction history of the user
     def display_history(self):
-        i = 0
-        if not self.transaction_history:
-            print("No transactions yet.")
-        else:
-            for entry in self.transaction_history:
-                i += 1
-                print(f"{i}. {entry}")  # Prints all the entries in a list from 1 to however many entries there are
-            print(f"Current balance: {self.balance}")
-    
+            history = "\n".join(user.transaction_history) or "No transactions yet."
+            messagebox.showinfo("History", f"{history}\n\nBalance: {user.balance}")
+
     # Function that saves the users information to the file
     def save_to_file(self):
         lines = []
@@ -47,15 +41,15 @@ class User:
                 lines = f.readlines()
 
         updated = False
-        for i, line in enumerate(lines):
+        for i, line in enumerate(lines):    # If accounts.txt does not exist, lines is empty, and this does not run
             parts = line.strip().split(", ")
-            if parts[0] == self.username:
+            if parts[0] == self.username:   # If the username is already in accounts, basically edits it
                 history_str = ";".join(self.transaction_history)
                 lines[i] = f"{self.username}, {self.password}, {self.balance}, {history_str}\n"
                 updated = True
-                break
+                break   # Quits for loop early once username is found.
 
-        if not updated:
+        if not updated:     # If accounts.txt does not exist or the username is new, basically creates the account within the file
             history_str = ";".join(self.transaction_history)
             lines.append(f"{self.username}, {self.password}, {self.balance}, {history_str}\n")
 
@@ -115,7 +109,6 @@ def login():
 
         print("Too many failed attempts. Returning to login menu.") # If user fails to enter the password too many times, return to menu
         return login_menu()
-
 
 # Function to make an account
 def make_account():
@@ -189,9 +182,11 @@ def main():
     bank_menu(user)  # Start bank menu interaction
 
 def start_gui():
-    root = tk.Tk()
-    root.title("Bank Program")
+    root = tk.Tk()   
+    root.title("Bank Program")  # Title of program
     root.geometry("1000x1000")
+    
+    root.mainloop()
 
 if __name__ == "__main__":
     main()  # Runs the program
