@@ -74,7 +74,7 @@ class BankApp(tk.Tk):
     def __init__(self):
         super().__init__()  # Basically makes self.tk exist and allows methods relying on it to work without breaking
         self.title("Bank Program")  # Sets starting title and geometry
-        self.geometry("600x400")
+        self.geometry("500x300")
         self.user = None
         self.switch_frame(LoginFrame)   # Switches to the login frame  as soon as possible
 
@@ -140,8 +140,8 @@ class RegisterFrame(tk.Frame):
         new_user.deposit(10000.0)
         new_user.save_to_file()
         messagebox.showinfo("Success", "Account created successfully!")
-        self.master.switch_frame(LoginFrame)
-
+        self.master.user = new_user # Log the new user in
+        self.master.switch_frame(BankMenuFrame)
 
 # Third frame
 class BankMenuFrame(tk.Frame):
@@ -205,115 +205,6 @@ class TransactionFrame(tk.Frame):
             messagebox.showinfo("Success", f"Deposited {amount}")
 
         self.master.switch_frame(BankMenuFrame)
-
-# Initialise global variables for account balance and transaction history
-balance = 0.0
-transaction_history = ""
-
-# Function that handles logins and account creation
-def login_menu():
-    while True:
-        choice = input("Would you like to login to an existing account? (y/n): ").strip().lower()
-        if choice == "y":
-            return login()  # If user wants to log in to an account, let them
-        elif choice == "n":
-            return make_account()   # If user doesn't want to log in to an account, make a new one
-        else:
-            messagebox.showerror("Invalid input.", "Please pick either 'y' or 'n'.")    # If user does not enter y or n, loops     
-
-def login():
-    while True:
-        username = input("Enter your account name (or type 'cancel' to return to menu): ").strip()
-        if username == "cancel":
-            return login_menu()  # Return to menu
-        user = User.load_user(username) # Loads the username
-        if not user:
-            messagebox.showerror("Account not found.", "Anaccount with this username does not exist. Try again.\n")     # If the user does not exist, asks for username again
-            continue
-
-        tries = 5
-        while tries > 0:
-            password = input("Enter your password: ").strip()
-            if password == user.password:
-                print("Login successful.")  # If the password is right
-                return user
-            else:
-                tries -= 1
-                print(f"Incorrect password. {tries} tries remaining.\n")    # If the password is wrong, asks for the password again
-
-        print("Too many failed attempts. Returning to login menu.") # If user fails to enter the password too many times, return to menu
-        return login_menu()
-
-# Function to make an account
-def make_account():
-    username = input("Please pick a username for your account: ").strip()   # Prompt user for name and password
-    password = input("Please pick a password for your account: ").strip()
-    user = User(username, password)
-    user.deposit(10000.0)   # Add initial funds to balance and records initial transaction
-    print("Account created with initial deposit of 10000.0")
-    user.save_to_file() # Saves the user to the file
-    return user
-
-# Function that handles the bank menu and its options
-def bank_menu(user):
-    choice = None
-    while choice != "4":
-        print("\n--- Bank Menu ---")
-        print("1. Deposit")
-        print("2. Withdraw")
-        print("3. Show Transaction History")
-        print("4. Exit")
-        choice = input("Enter your choice (1-4): ").strip()
-
-        match choice:   # Handles user's choice using a match case statement
-            case "1":
-                update_balance(user, isWithdraw=False)     # Deposit
-            case "2":
-                update_balance(user, isWithdraw=True)      # Withdraw
-            case "3":
-                user.display_history()  # Show history
-            case "4":
-                user.save_to_file()
-                print("Thank you for using the program.")
-                break   # Exit loop
-            case _:
-                print("Please enter a valid number from 1 to 4.")
-
-# Function that handles depositing and withdrawing money from the account
-def update_balance(user, isWithdraw):
-    print(f"Your current account balance is {user.balance}.")
-    user_input = input("Please insert how much money you want to move (or type 'cancel' to return to menu): ").strip().lower()
-
-    if user_input == "cancel":
-        print("Transaction cancelled. Returning to bank menu.")
-        return
-
-    # Tries to convert user input to float and makes sure it's a positive value
-    try:
-        money = float(user_input)
-        if money <= 0:
-            raise ValueError()
-    except ValueError:
-        messagebox.showerror("Invalid input", "Please enter a number greater than 0.")
-        return update_balance(user, isWithdraw)  # Retry
-    
-    # If withdrawing, checks for insufficient balance
-    if isWithdraw and user.balance < money:
-        messagebox.showerror("Error", "Insufficient funds.")
-        return update_balance(user, isWithdraw)  # Retry
-    
-    # Performs the transaction and updates history
-    if isWithdraw:
-        if user.withdraw(money):
-            print("Withdrawal successful.")
-    else:
-        user.deposit(money)
-        print("Deposit successful.")
-
-# Entry point for the program
-def main():
-    user = login_menu() # Login or create account
-    bank_menu(user)  # Start bank menu interaction
 
 def start_gui():
     app = BankApp()
