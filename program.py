@@ -15,6 +15,25 @@ class ThemedFrame(ttk.Frame):
         entry.pack(pady=2, fill="x")
         return entry
 
+# Function that resizes the current frame 
+def smooth_resize(window, target_width, target_height, steps=10, delay=20):
+    current_width = window.winfo_width()
+    current_height = window.winfo_height()
+
+    delta_w = (target_width - current_width) / steps
+    delta_h = (target_height - current_height) / steps
+
+    def step(i=0):
+        if i < steps:
+            new_w = int(current_width + delta_w * i)
+            new_h = int(current_height + delta_h * i)
+            window.geometry(f"{new_w}x{new_h}")
+            window.after(delay, lambda: step(i + 1))
+        else:
+            window.geometry(f"{target_width}x{target_height}")  # Snap to final when all steps are done
+
+    step()
+
 # User class to facilitate containing the information of the person using the program
 class User:
     # Initialises values
@@ -97,15 +116,14 @@ def configure_styles(style: ttk.Style, theme: str):
 class BankApp(tk.Tk):
     def __init__(self):
         super().__init__()  # Basically makes self.tk exist and allows methods relying on it to work without breaking
-        self.title("Bank Program")  # Sets starting title and geometry
-        self.geometry("250x280")
+        self.title("Bank")  # Sets starting title, but does not set a starting geometry, as this is done within the frames individually
         self.user = None
 
         self.style = ttk.Style()
         self.theme = "light"    # Start with light theme
         self.apply_theme()
 
-        self.switch_frame(LoginFrame)   # Switches to the login frame  as soon as possible
+        self.switch_frame(LoginFrame)   # Switches to the login frame as soon as possible
 
     # Function that sets the theme of the program
     def toggle_theme(self):
@@ -141,6 +159,7 @@ class BankApp(tk.Tk):
 class LoginFrame(ThemedFrame):
     def __init__(self, master):
         super().__init__(master)    # Calls the tk.Frame constructor so ThemedFrame works
+        smooth_resize(self.master, 220, 220)    # Resizes window
         self.username = self.labeled_entry("Username")      # Sets up username label
         self.password = self.labeled_entry("Password", show="*")    # Sets up password label
 
@@ -162,6 +181,7 @@ class LoginFrame(ThemedFrame):
 class RegisterFrame(ThemedFrame):
     def __init__(self, master): 
         super().__init__(master)    # Calls the tk.Frame constructor again
+        smooth_resize(self.master, 220, 180)    # Resizes window to something else
         self.username = self.labeled_entry("Choose Username")
         self.password = self.labeled_entry("Choose Password", show="*")
 
@@ -191,6 +211,7 @@ class RegisterFrame(ThemedFrame):
 class BankMenuFrame(ThemedFrame):
     def __init__(self, master):
         super().__init__(master)    # Calls the tk.Frame constructor
+        smooth_resize(self.master, 220, 262)
         user = master.user
         self.balance_label = ttk.Label(self, text=f"Balance: ${user.balance:.2f}")
         self.balance_label.pack(pady=5)
@@ -219,6 +240,7 @@ class BankMenuFrame(ThemedFrame):
 class TransactionFrame(ThemedFrame):
     def __init__(self, master, is_withdraw):
         super().__init__(master)
+        smooth_resize(self.master, 220, 130)
         self.master = master
         self.is_withdraw = is_withdraw
         action = "Withdraw" if is_withdraw else "Deposit"
