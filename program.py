@@ -6,12 +6,12 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 
-# Class to facilitate adding light and dark modes to program (and to facilitate possible improvements to theming)
+# A base frame class that contains helper methods for UI consistency (convenience)
 class ThemedFrame(ttk.Frame):
     # Creates a label and entry pair and returns the Entry widget
     def labeled_entry(self, label_text, **entry_kwargs):
         ttk.Label(self, text=label_text).pack(pady=2)
-        entry = ttk.Entry(self, **entry_kwargs)     # entry_kwargs allows passing extra keyword args shuch as show="*", avoiding hardcoding
+        entry = ttk.Entry(self, **entry_kwargs)     # entry_kwargs allows passing extra keyword args such as show="*", avoiding hardcoding
         entry.pack(pady=2, fill="x")
         return entry
 
@@ -85,17 +85,17 @@ class User:
     # Function that loads the users information from the file
     @staticmethod   # "load_user" doesn't rely on "self", so I declared it as a static method
     def load_user(username):
-        if not os.path.exists("accounts.txt"):
+        if not os.path.exists("accounts.txt"):  # If the file doesn't exist, there's no user to load, so return None
             return None
-        with open("accounts.txt", "r") as f:
+        with open("accounts.txt", "r") as f:    # Opens the accounts file and searches for the user line-by-line
             for line in f:
                 parts = line.strip().split(", ")
-                if parts[0] == username:
+                if parts[0] == username:    # If the username matches, extracts and converts the data
                     password = parts[1]
                     balance = float(parts[2])
                     history = parts[3].split(";") if len(parts) > 3 else []
-                    return User(username, password, balance, history)
-        return None
+                    return User(username, password, balance, history)   # Returns a new User instance with the extracted data
+        return None # If no match is found, also returns None
 
 # -------------------- GUI part starts here --------------------
 
@@ -112,7 +112,7 @@ def configure_styles(style: ttk.Style, theme: str):
         style.configure("TButton", background="SystemButtonFace", foreground="black")
         style.configure("TEntry",  fieldbackground="white", foreground="black")
 
-
+# Main application class that manages the GUI and frame switches
 class BankApp(tk.Tk):
     def __init__(self):
         super().__init__()  # Basically makes self.tk exist and allows methods relying on it to work without breaking
@@ -149,19 +149,19 @@ class BankApp(tk.Tk):
 
     # Function that destroys the current frame and replaces it with a new one
     def switch_frame(self, frame_class):
-        new_frame = frame_class(self) if callable(frame_class) else frame_class(self)  # Properly instantiate frame with `self` as master
+        new_frame = frame_class(self) if callable(frame_class) else frame_class(self)  # Properly instantiate frame with "self" as master
         if hasattr(self, '_frame'):
             self._frame.destroy()
         self._frame = new_frame
         self._frame.pack(fill="both", expand=True)  # Replaces with a new frame right after destruction
 
-# First frame
+# First frame, handles logging into an account
 class LoginFrame(ThemedFrame):
     def __init__(self, master):
         super().__init__(master)    # Calls the tk.Frame constructor so ThemedFrame works
         smooth_resize(self.master, 220, 220)    # Resizes window
         self.username = self.labeled_entry("Username")      # Sets up username label
-        self.password = self.labeled_entry("Password", show="*")    # Sets up password label
+        self.password = self.labeled_entry("Password", show="*")    # Sets up password label, hiding the actual password behind "*"s
 
         ttk.Button(self, text="Login", command=self.login).pack(pady=5)      # Buttons to progress the program
         ttk.Button(self, text="Create Account", command=lambda: master.switch_frame(RegisterFrame)).pack()
@@ -177,7 +177,7 @@ class LoginFrame(ThemedFrame):
         else:
             messagebox.showerror("Error", "Invalid username or password.")  # Informs user that the login was unsuccessful
 
-# Second frame
+# Second frame, handles registering new accounts
 class RegisterFrame(ThemedFrame):
     def __init__(self, master): 
         super().__init__(master)    # Calls the tk.Frame constructor again
@@ -189,29 +189,29 @@ class RegisterFrame(ThemedFrame):
         ttk.Button(self, text="Back to Login", command=lambda: master.switch_frame(LoginFrame)).pack()
     
     def register(self):
-        username = self.username.get().strip()
+        username = self.username.get().strip()  # Gets user input
         password = self.password.get().strip()
 
-        if not username or not password:
+        if not username or not password:    # Validates user input to make sure no fields are empty
             messagebox.showerror("Error", "Username and password cannot be empty.")
             return
 
-        if User.load_user(username):
+        if User.load_user(username):    # Checks if the username already exists in the file
             messagebox.showerror("Error", "Username already exists.")
             return
 
-        new_user = User(username, password)
-        new_user.deposit(10000.0)
-        new_user.save_to_file()
+        new_user = User(username, password) # Creates a new user with the given credentials
+        new_user.deposit(10000.0)           # Gives the new user some sarting balance
+        new_user.save_to_file()             # Saves the new user's data to the file 
         messagebox.showinfo("Success", "Account created successfully!")
         self.master.user = new_user # Log the new user in
-        self.master.switch_frame(BankMenuFrame)
+        self.master.switch_frame(BankMenuFrame) # Switch to the main bank menu screen
 
-# Third frame
+# Third frame, handles most of the user's actions
 class BankMenuFrame(ThemedFrame):
     def __init__(self, master):
         super().__init__(master)    # Calls the tk.Frame constructor
-        smooth_resize(self.master, 220, 262)
+        smooth_resize(self.master, 220, 262)    # Weirdly specific height to make up for the padding 
         user = master.user
         self.balance_label = ttk.Label(self, text=f"Balance: ${user.balance:.2f}")
         self.balance_label.pack(pady=5)
@@ -227,50 +227,50 @@ class BankMenuFrame(ThemedFrame):
 
 
     def show_history(self):
-        history = "\n".join(self.master.user.transaction_history)
+        history = "\n".join(self.master.user.transaction_history)   # Retrieves the transaction historyand balance of the current user
         balance = self.master.user.balance
-        messagebox.showinfo("Transaction History", f"{history}\n\nBalance: {balance}")
+        messagebox.showinfo("Transaction History", f"{history}\n\nBalance: {balance}")  # Displays history and balance in a message box
 
     def logout(self):
-        self.master.user.save_to_file()
-        self.master.user = None
-        self.master.switch_frame(LoginFrame)
+        self.master.user.save_to_file()         # Saves current user's data to the file before logging out
+        self.master.user = None                 # Clears the user session
+        self.master.switch_frame(LoginFrame)    # Returns to the login screen
 
-# Fourth frame
+# Fourth frame, handles deposits and withdrawals
 class TransactionFrame(ThemedFrame):
     def __init__(self, master, is_withdraw):
         super().__init__(master)
-        smooth_resize(self.master, 220, 130)
+        smooth_resize(self.master, 220, 130)    # Smaller window for a more compact UI
         self.master = master
         self.is_withdraw = is_withdraw
-        action = "Withdraw" if is_withdraw else "Deposit"
+        action = "Withdraw" if is_withdraw else "Deposit"   # Label changes based on transaction type
 
-        self.amount_entry = self.labeled_entry(f"{action} Amount") # Sets up amount_entry label
+        self.amount_entry = self.labeled_entry(f"{action} Amount")  # Input field is labeled appropriately based on transaction type too
 
         ttk.Button(self, text=action, command=self.do_transaction).pack(pady=5)
         ttk.Button(self, text="Back", command=lambda: master.switch_frame(BankMenuFrame)).pack()
     
     def do_transaction(self):
-        try:
+        try:    # Tries to convert the entered amount to a valid float
             amount = float(self.amount_entry.get())
             if amount <= 0:
                 raise ValueError()
-        except ValueError:
+        except ValueError:  # If the input is invalid, shows an error and returns
             messagebox.showerror("Error", "Please enter a valid positive number.")
             return
 
         user = self.master.user
         if self.is_withdraw:
-            if user.balance < amount:
+            if user.balance < amount:   # If withdrawing, checks if the user has sufficient balance first
                 messagebox.showerror("Error", "Insufficient funds.")
                 return
-            user.withdraw(amount)
+            user.withdraw(amount)   # Performs withdrawal and confirms success
             messagebox.showinfo("Success", f"Withdrew {amount}")
         else:
-            user.deposit(amount)
+            user.deposit(amount)    # Performs deposit and confirms success
             messagebox.showinfo("Success", f"Deposited {amount}")
 
-        self.master.switch_frame(BankMenuFrame)
+        self.master.switch_frame(BankMenuFrame)     # After transaction, returns to the main menu
 
 def start_gui():
     app = BankApp()
