@@ -1,38 +1,10 @@
-# Version 3 of the bank program
+# Final version of the bank program
 
 # Imports neccesary libraries
 import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-
-# A base frame class that contains helper methods for UI consistency (convenience)
-class ThemedFrame(ttk.Frame):
-    # Creates a label and entry pair and returns the Entry widget
-    def labeled_entry(self, label_text, **entry_kwargs):
-        ttk.Label(self, text=label_text).pack(pady=2)
-        entry = ttk.Entry(self, **entry_kwargs)     # entry_kwargs allows passing extra keyword args such as show="*", avoiding hardcoding
-        entry.pack(pady=2, fill="x")
-        return entry
-
-# Function that resizes the current frame 
-def smooth_resize(window, target_width, target_height, steps=10, delay=20):
-    current_width = window.winfo_width()
-    current_height = window.winfo_height()
-
-    delta_w = (target_width - current_width) / steps
-    delta_h = (target_height - current_height) / steps
-
-    def step(i=0):
-        if i < steps:
-            new_w = int(current_width + delta_w * i)
-            new_h = int(current_height + delta_h * i)
-            window.geometry(f"{new_w}x{new_h}")
-            window.after(delay, lambda: step(i + 1))
-        else:
-            window.geometry(f"{target_width}x{target_height}")  # Snap to final when all steps are done
-
-    step()
 
 # User class to facilitate containing the information of the person using the program
 class User:
@@ -112,13 +84,42 @@ def configure_styles(style: ttk.Style, theme: str):
         style.configure("TButton", background="SystemButtonFace", foreground="black")
         style.configure("TEntry",  fieldbackground="white", foreground="black")
 
+# A base frame class that contains helper methods for UI consistency (convenience)
+class ThemedFrame(ttk.Frame):
+    # Creates a label and entry pair and returns the Entry widget
+    def labeled_entry(self, label_text, **entry_kwargs):
+        ttk.Label(self, text=label_text).pack(pady=2)
+        entry = ttk.Entry(self, **entry_kwargs)     # entry_kwargs allows passing extra keyword args such as show="*", avoiding hardcoding
+        entry.pack(pady=2, fill="x")
+        return entry
+
+# Function that resizes the current frame 
+def smooth_resize(window, target_width, target_height, steps=10, delay=20):
+    current_width = window.winfo_width()    # Get the current width and height of the window
+    current_height = window.winfo_height()
+
+    delta_w = (target_width - current_width) / steps    # Calculate the change in width and height per step
+    delta_h = (target_height - current_height) / steps
+
+    # A recursive function to apply resizing smoothly
+    def step(i=0):
+        if i < steps:
+            new_w = int(current_width + delta_w * i)    # Calculates the new dimensions for this individual step
+            new_h = int(current_height + delta_h * i)
+            window.geometry(f"{new_w}x{new_h}")         # Apply new dimensions to the window
+            window.after(delay, lambda: step(i + 1))    # Schedule the next resizing step after a slight delay (in milliseconds)
+        else:
+            window.geometry(f"{target_width}x{target_height}")  # Snap to final when all steps are done
+
+    step()
+
 # Main application class that manages the GUI and frame switches
 class BankApp(tk.Tk):
     def __init__(self):
         super().__init__()  # Basically makes self.tk exist and allows methods relying on it to work without breaking
         self.title("Bank")  # Sets starting title, but does not set a starting geometry, as this is done within the frames individually
         self.user = None
-
+        self.resizable(False, False)    # Disables manual resizing
         self.style = ttk.Style()
         self.theme = "light"    # Start with light theme
         self.apply_theme()
